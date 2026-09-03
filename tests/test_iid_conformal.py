@@ -1,7 +1,11 @@
 import pytest
 from sklearn.datasets import make_classification
 
-from conformalguard.experiments import run_iid_conformal
+from conformalguard.experiments import (
+    SUPPORTED_CONFORMITY_SCORES,
+    run_iid_conformal,
+    run_iid_conformal_benchmark,
+)
 
 
 def make_multiclass_dataset():
@@ -65,4 +69,52 @@ def test_invalid_confidence_level_raises_error():
             X,
             y,
             confidence_level=1.20,
+        )
+
+def test_iid_conformal_benchmark_runs_all_supported_methods():
+    X, y = make_multiclass_dataset()
+
+    results = run_iid_conformal_benchmark(
+        X,
+        y,
+        confidence_level=0.90,
+        random_state=42,
+    )
+
+    assert tuple(result.conformity_score for result in results) == (
+        SUPPORTED_CONFORMITY_SCORES
+    )
+
+    reference_accuracy = results[0].classification.accuracy
+    reference_macro_f1 = results[0].classification.macro_f1
+
+    for result in results:
+        assert result.confidence_level == pytest.approx(0.90)
+        assert result.classification.accuracy == pytest.approx(
+            reference_accuracy
+        )
+        assert result.classification.macro_f1 == pytest.approx(
+            reference_macro_f1
+        )
+
+
+def test_iid_conformal_benchmark_rejects_empty_method_list():
+    X, y = make_multiclass_dataset()
+
+    with pytest.raises(ValueError):
+        run_iid_conformal_benchmark(
+            X,
+            y,
+            conformity_scores=[],
+        )
+
+
+def test_invalid_conformity_score_raises_error():
+    X, y = make_multiclass_dataset()
+
+    with pytest.raises(ValueError):
+        run_iid_conformal(
+            X,
+            y,
+            conformity_score="unknown",
         )
