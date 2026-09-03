@@ -5,17 +5,27 @@ from conformalguard.experiments.iid_baseline import (
     run_iid_baseline,
 )
 from conformalguard.experiments.iid_conformal import (
+    BINARY_CONFORMITY_SCORES,
     SUPPORTED_CONFORMITY_SCORES,
     IIDConformalResult,
     run_iid_conformal,
     run_iid_conformal_benchmark,
 )
+from conformalguard.experiments.iid_grid import (
+    IIDGridSummary,
+    run_iid_grid,
+    summarize_iid_grid,
+)
 
 __all__ = [
+    "BINARY_CONFORMITY_SCORES",
     "SUPPORTED_CONFORMITY_SCORES",
     "IIDBaselineResult",
     "IIDConformalResult",
+    "IIDGridSummary",
     "run_iid_baseline",
     "run_iid_conformal",
     "run_iid_conformal_benchmark",
+    "run_iid_grid",
+    "summarize_iid_grid",
 ]
