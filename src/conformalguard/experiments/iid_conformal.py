@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable
 
+import numpy as np
 from mapie.classification import SplitConformalClassifier
 
 from conformalguard.data import stratified_train_conf_test_split
@@ -16,6 +17,7 @@ from conformalguard.models import make_logistic_regression
 
 
 SUPPORTED_CONFORMITY_SCORES = ("lac", "aps", "raps")
+BINARY_CONFORMITY_SCORES = ("lac",)
 
 
 @dataclass(frozen=True)
@@ -31,6 +33,25 @@ class IIDConformalResult:
     conformal: ConformalMetrics
 
 
+def _valid_conformity_scores(y: Any) -> tuple[str, ...]:
+    """Return conformity scores supported for the supplied target."""
+
+    target = np.asarray(y)
+
+    if target.ndim != 1:
+        raise ValueError("Classification target must be one-dimensional.")
+
+    n_classes = len(np.unique(target))
+
+    if n_classes < 2:
+        raise ValueError("Classification requires at least two target classes.")
+
+    if n_classes == 2:
+        return BINARY_CONFORMITY_SCORES
+
+    return SUPPORTED_CONFORMITY_SCORES
+
+
 def run_iid_conformal(
     X: Any,
     y: Any,
@@ -44,10 +65,12 @@ def run_iid_conformal(
     if not 0.0 < confidence_level < 1.0:
         raise ValueError("confidence_level must be between 0 and 1.")
 
-    if conformity_score not in SUPPORTED_CONFORMITY_SCORES:
+    valid_scores = _valid_conformity_scores(y)
+
+    if conformity_score not in valid_scores:
         raise ValueError(
-            "conformity_score must be one of "
-            f"{SUPPORTED_CONFORMITY_SCORES}."
+            f"conformity_score {conformity_score!r} is not valid for this "
+            f"target. Valid scores are {valid_scores}."
         )
 
     split = stratified_train_conf_test_split(
@@ -103,15 +126,30 @@ def run_iid_conformal_benchmark(
     y: Any,
     *,
     confidence_level: float = 0.90,
-    conformity_scores: Iterable[str] = SUPPORTED_CONFORMITY_SCORES,
+    conformity_scores: Iterable[str] | None = None,
     random_state: int = 42,
 ) -> tuple[IIDConformalResult, ...]:
-    """Compare multiple conformal methods under identical IID settings."""
+    """Compare valid conformal methods under identical IID settings."""
 
-    methods = tuple(conformity_scores)
+    valid_scores = _valid_conformity_scores(y)
+
+    if conformity_scores is None:
+        methods = valid_scores
+    else:
+        methods = tuple(conformity_scores)
 
     if not methods:
         raise ValueError("At least one conformity score is required.")
+
+    invalid_methods = tuple(
+        method for method in methods if method not in valid_scores
+    )
+
+    if invalid_methods:
+        raise ValueError(
+            f"Invalid conformity scores {invalid_methods} for this target. "
+            f"Valid scores are {valid_scores}."
+        )
 
     return tuple(
         run_iid_conformal(

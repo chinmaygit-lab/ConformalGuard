@@ -118,3 +118,42 @@ def test_invalid_conformity_score_raises_error():
             y,
             conformity_score="unknown",
         )
+
+def test_binary_benchmark_defaults_to_lac_only():
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=20,
+        n_informative=12,
+        n_redundant=4,
+        n_classes=2,
+        random_state=42,
+    )
+
+    results = run_iid_conformal_benchmark(
+        X,
+        y,
+        confidence_level=0.90,
+        random_state=42,
+    )
+
+    assert len(results) == 1
+    assert results[0].conformity_score == "lac"
+
+
+def test_binary_benchmark_rejects_aps():
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=20,
+        n_informative=12,
+        n_redundant=4,
+        n_classes=2,
+        random_state=42,
+    )
+
+    with pytest.raises(ValueError, match="Invalid conformity scores"):
+        run_iid_conformal_benchmark(
+            X,
+            y,
+            conformity_scores=["lac", "aps"],
+            random_state=42,
+        )
