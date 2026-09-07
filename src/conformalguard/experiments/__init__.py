@@ -25,6 +25,10 @@ from conformalguard.experiments.iid_grid import (
     run_iid_grid,
     summarize_iid_grid,
 )
+from conformalguard.experiments.label_shift import (
+    LabelShiftExperimentResult,
+    run_label_shift_sweep,
+)
 
 __all__ = [
     "BINARY_CONFORMITY_SCORES",
@@ -34,12 +38,14 @@ __all__ = [
     "IIDBaselineResult",
     "IIDConformalResult",
     "IIDGridSummary",
+    "LabelShiftExperimentResult",
     "run_covariate_shift_grid",
     "run_covariate_shift_sweep",
     "run_iid_baseline",
     "run_iid_conformal",
     "run_iid_conformal_benchmark",
     "run_iid_grid",
+    "run_label_shift_sweep",
     "summarize_covariate_shift_grid",
     "summarize_iid_grid",
 ]
