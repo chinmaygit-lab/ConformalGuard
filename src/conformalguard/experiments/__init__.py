@@ -34,6 +34,10 @@ from conformalguard.experiments.label_shift_grid import (
     run_label_shift_grid,
     summarize_label_shift_grid,
 )
+from conformalguard.experiments.robustness import (
+    RobustnessBenchmarkResult,
+    run_robustness_benchmark,
+)
 
 __all__ = [
     "BINARY_CONFORMITY_SCORES",
@@ -45,6 +49,7 @@ __all__ = [
     "IIDGridSummary",
     "LabelShiftExperimentResult",
     "LabelShiftGridSummary",
+    "RobustnessBenchmarkResult",
     "run_covariate_shift_grid",
     "run_covariate_shift_sweep",
     "run_iid_baseline",
@@ -53,6 +58,7 @@ __all__ = [
     "run_iid_grid",
     "run_label_shift_grid",
     "run_label_shift_sweep",
+    "run_robustness_benchmark",
     "summarize_covariate_shift_grid",
     "summarize_iid_grid",
     "summarize_label_shift_grid",
