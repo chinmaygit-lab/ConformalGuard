@@ -44,6 +44,14 @@ from conformalguard.experiments.robustness_reporting import (
     write_robustness_summary_csv,
     write_robustness_summary_json,
 )
+from conformalguard.experiments.robustness_plotting import (
+    SUPPORTED_ROBUSTNESS_METRICS,
+    plot_robustness_accuracy,
+    plot_robustness_coverage,
+    plot_robustness_coverage_gap,
+    plot_robustness_metric,
+    plot_robustness_set_size,
+)
 
 __all__ = [
     "BINARY_CONFORMITY_SCORES",
@@ -56,6 +64,12 @@ __all__ = [
     "LabelShiftExperimentResult",
     "LabelShiftGridSummary",
     "RobustnessBenchmarkResult",
+    "SUPPORTED_ROBUSTNESS_METRICS",
+    "plot_robustness_accuracy",
+    "plot_robustness_coverage",
+    "plot_robustness_coverage_gap",
+    "plot_robustness_metric",
+    "plot_robustness_set_size",
     "run_covariate_shift_grid",
     "run_covariate_shift_sweep",
     "run_iid_baseline",
