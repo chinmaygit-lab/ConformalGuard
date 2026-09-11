@@ -16,3 +16,5 @@ htmlcov/
 Thumbs.db
 results/raw/
 *.log
+# Generated benchmark outputs
+artifacts/
