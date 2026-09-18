@@ -1,5 +1,10 @@
 """Reproducible experiment pipelines."""
 
+from conformalguard.experiments.concept_shift import (
+    ConceptShiftExperimentResult,
+    run_concept_shift_sweep,
+)
+
 from conformalguard.experiments.covariate_shift import (
     CovariateShiftExperimentResult,
     run_covariate_shift_sweep,
@@ -56,6 +61,7 @@ from conformalguard.experiments.robustness_plotting import (
 __all__ = [
     "BINARY_CONFORMITY_SCORES",
     "SUPPORTED_CONFORMITY_SCORES",
+    "ConceptShiftExperimentResult",
     "CovariateShiftExperimentResult",
     "CovariateShiftGridSummary",
     "IIDBaselineResult",
@@ -70,6 +76,7 @@ __all__ = [
     "plot_robustness_coverage_gap",
     "plot_robustness_metric",
     "plot_robustness_set_size",
+    "run_concept_shift_sweep",
     "run_covariate_shift_grid",
     "run_covariate_shift_sweep",
     "run_iid_baseline",
