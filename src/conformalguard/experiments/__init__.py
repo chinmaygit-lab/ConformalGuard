@@ -4,6 +4,11 @@ from conformalguard.experiments.concept_shift import (
     ConceptShiftExperimentResult,
     run_concept_shift_sweep,
 )
+from conformalguard.experiments.concept_shift_grid import (
+    ConceptShiftGridSummary,
+    run_concept_shift_grid,
+    summarize_concept_shift_grid,
+)
 
 from conformalguard.experiments.covariate_shift import (
     CovariateShiftExperimentResult,
@@ -62,6 +67,7 @@ __all__ = [
     "BINARY_CONFORMITY_SCORES",
     "SUPPORTED_CONFORMITY_SCORES",
     "ConceptShiftExperimentResult",
+    "ConceptShiftGridSummary",
     "CovariateShiftExperimentResult",
     "CovariateShiftGridSummary",
     "IIDBaselineResult",
@@ -76,6 +82,7 @@ __all__ = [
     "plot_robustness_coverage_gap",
     "plot_robustness_metric",
     "plot_robustness_set_size",
+    "run_concept_shift_grid",
     "run_concept_shift_sweep",
     "run_covariate_shift_grid",
     "run_covariate_shift_sweep",
@@ -88,6 +95,7 @@ __all__ = [
     "run_robustness_benchmark",
     "robustness_summary_frame",
     "robustness_summary_records",
+    "summarize_concept_shift_grid",
     "summarize_covariate_shift_grid",
     "summarize_iid_grid",
     "summarize_label_shift_grid",
