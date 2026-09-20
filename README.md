@@ -2,508 +2,282 @@
 
 **A reproducible benchmark for evaluating conformal prediction under distribution shift.**
 
-ConformalGuard studies how reliably conformal prediction methods maintain statistical coverage when the data distribution changes between calibration and deployment.
+ConformalGuard studies how classification prediction sets behave when deployment data differs from the data used for training and conformal calibration.
 
-The project focuses on **CPU-friendly tabular classifiers** and evaluates the trade-off between prediction-set reliability, shift severity, and the additional cost required to restore coverage.
+The benchmark currently supports:
+
+- IID evaluation
+- Covariate shift
+- Label shift
+- Concept shift
+- Multi-seed experiment grids
+- Accuracy and conformal metrics
+- IID-relative degradation analysis
+- CSV and JSON reporting
+- Robustness visualizations
+
+The implementation is designed for reproducible, CPU-friendly tabular classification experiments.
 
 ---
 
 ## Research Question
 
-> **How reliable are conformal prediction sets from CPU-friendly tabular classifiers under covariate, label, and temporal distribution shift, and what is the cost of restoring coverage as shift severity increases?**
+> How does conformal prediction reliability change under controlled distribution shift, and how quickly do predictive performance and empirical coverage degrade as shift severity increases?
 
-The benchmark is designed to answer two related questions:
-
-1. **How much does distribution shift degrade conformal coverage?**
-2. **How much additional data, computation, or adaptation is required to recover the desired coverage level?**
+ConformalGuard focuses on empirical robustness rather than assuming conformal prediction remains calibrated under arbitrary distribution changes.
 
 ---
 
 ## Why ConformalGuard?
 
-Conformal prediction provides prediction sets with finite-sample coverage guarantees under appropriate assumptions.
+Conformal prediction can provide finite-sample coverage guarantees under appropriate assumptions.
 
-However, real-world deployment often violates those assumptions.
+Real deployment conditions may violate those assumptions through changes in feature distributions, class prevalence, or the relationship between features and labels.
 
-A model may be calibrated on one distribution and deployed on another because of:
+ConformalGuard measures these effects using accuracy, macro F1, empirical coverage, coverage gap, prediction-set size, and empty-set rate.
 
-* Changes in feature distributions
-* Changes in class proportions
-* Temporal drift
-* Changes in the data-generating process
-
-A conformal predictor that performs well under independent and identically distributed data may therefore provide prediction sets with substantially different empirical coverage after deployment.
-
-**ConformalGuard** provides a controlled benchmark for studying this behavior.
 
 ---
 
-## Shift Types
+## Benchmark Families
 
-The benchmark is organized around three major forms of distribution shift.
+### IID
 
-### 1. Covariate Shift
+The IID experiment provides the reference condition used for robustness comparisons.
 
-The distribution of input features changes:
+### Covariate Shift
 
-```text
-P_train(X) ≠ P_test(X)
-```
+Covariate shift modifies selected test features with configurable severity while preserving the original labels. This stresses changes in the input distribution.
 
-while the relationship between features and labels is intended to remain comparatively stable.
+### Label Shift
 
-Example:
+Label shift reproducibly changes the class proportions of the evaluation population while preserving feature-label pairs. This measures sensitivity to changing class prevalence.
 
-```text
-Training distribution
-        ↓
-Feature distribution changes
-        ↓
-Deployment distribution
-```
+### Concept Shift
+
+Concept shift changes the relationship between features and labels using a controlled, feature-dependent label transformation. This stresses changes in the conditional relationship between X and Y.
 
 ---
 
-### 2. Label Shift
-
-The class distribution changes:
+## Experiment Pipeline
 
 ```text
-P_train(Y) ≠ P_test(Y)
-```
-
-while the class-conditional feature distributions are intended to remain comparatively stable.
-
-This allows the benchmark to investigate how changes in class prevalence affect conformal prediction sets.
-
----
-
-### 3. Temporal Shift
-
-The deployment data comes from a later period than the calibration/training data.
-
-```text
-Past
- │
- ▼
-Training ─── Calibration
-                │
-                │ Time
-                ▼
-             Deployment
-```
-
-Temporal shift is particularly important because it represents a common real-world deployment scenario where future observations differ from historical data.
-
----
-
-# Core Evaluation Goals
-
-ConformalGuard evaluates more than classification accuracy.
-
-The primary focus is the behavior of **prediction sets** under distribution shift.
-
-Key measurements include:
-
-### Coverage
-
-The fraction of test examples for which the true label is contained in the prediction set.
-
-```text
-Empirical Coverage
-=
-Correctly Covered Examples
-──────────────────────────
-       Test Examples
+Dataset
+  |
+  v
+Train / calibration / test split
+  |
+  +--> Train classifier
+  |
+  +--> Conformal calibration
+  |
+  +--> IID evaluation
+  |
+  +--> Covariate-shift grid
+  |
+  +--> Label-shift grid
+  |
+  +--> Concept-shift grid
+  |
+  v
+Multi-seed aggregation
+  |
+  v
+Robustness reporting
+  |
+  +--> CSV / JSON
+  +--> absolute-metric plots
+  +--> IID-relative degradation
+  +--> degradation plots
 ```
 
 ---
 
-### Target Coverage
+## Robustness Degradation
 
-A desired coverage level such as:
+ConformalGuard measures every shifted condition relative to the IID baseline.
 
 ```text
-90%
-95%
-99%
+delta = shifted metric - IID metric
 ```
 
-can be specified for the benchmark.
+For accuracy, macro F1, and coverage, a negative delta represents degradation relative to IID performance.
 
-The evaluation then measures how closely the observed coverage matches the target.
+The degradation layer supports:
 
----
+- accuracy
+- macro F1
+- coverage
+- coverage gap
+- prediction-set size
+- empty-set rate
 
-### Coverage Degradation
+Results can be returned as a pandas DataFrame or exported to CSV and JSON.
 
-The benchmark measures the change in coverage between the reference setting and shifted settings.
-
-```text
-Coverage degradation
-=
-Reference coverage − Shifted coverage
-```
-
-This provides a direct measure of robustness to distribution shift.
 
 ---
 
-### Prediction-Set Size
+## Installation
 
-Coverage alone is not sufficient.
+ConformalGuard requires Python 3.11 or newer.
 
-A predictor could increase coverage simply by returning very large prediction sets.
-
-Therefore, ConformalGuard also measures:
-
-```text
-Average prediction-set size
-```
-
-This captures the efficiency–coverage trade-off.
-
----
-
-### Cost of Recovery
-
-When shift causes coverage to fall below the desired level, the benchmark evaluates the cost of restoring coverage.
-
-Depending on the experimental protocol, this may include:
-
-* Additional calibration data
-* Additional labeled data
-* Recalibration
-* Adaptation
-* Computational overhead
-
-The goal is to quantify not only **whether coverage can be recovered**, but **what it costs to recover it**.
-
----
-
-# Experimental Framework
-
-The benchmark follows a reproducible pipeline:
-
-```text
-                    Dataset
-                       │
-                       ▼
-                Data Preparation
-                       │
-                       ▼
-              Train Base Classifier
-                       │
-                       ▼
-                Calibration Set
-                       │
-                       ▼
-              Conformal Predictor
-                       │
-              ┌────────┼────────┐
-              │        │        │
-              ▼        ▼        ▼
-          Covariate  Label   Temporal
-            Shift    Shift     Shift
-              │        │        │
-              └────────┼────────┘
-                       ▼
-                  Test Sets
-                       │
-                       ▼
-                 Evaluation
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-      Coverage     Set Size     Recovery Cost
+```bash
+python -m pip install -e ".[dev]"
 ```
 
 ---
 
-# Benchmark Dimensions
+## Run the Test Suite
 
-Experiments are intended to vary several dimensions systematically.
-
-| Dimension         | Examples                              |
-| ----------------- | ------------------------------------- |
-| Classifier        | CPU-friendly tabular models           |
-| Conformal method  | Configurable benchmark methods        |
-| Target coverage   | 90%, 95%, 99%                         |
-| Shift type        | Covariate, label, temporal            |
-| Shift severity    | Multiple controlled levels            |
-| Dataset           | Reproducible tabular datasets         |
-| Random seed       | Fixed/reported seeds                  |
-| Calibration size  | Controlled experiment parameter       |
-| Recovery strategy | Configurable adaptation/recalibration |
-
-The exact experimental matrix will be documented as the benchmark develops.
-
----
-
-# Reproducibility
-
-Reproducibility is a central design goal.
-
-Experiments should record:
-
-* Dataset version
-* Data split
-* Random seed
-* Model configuration
-* Calibration configuration
-* Conformal method
-* Target coverage
-* Shift type
-* Shift severity
-* Evaluation metrics
-* Software environment
-
-A successful benchmark run should be reproducible from the repository configuration.
-
----
-
-# Research Environment
-
-The project currently focuses on establishing a controlled research environment before large-scale experiments are introduced.
-
-The environment is intended to support:
-
-```text
-Python
-   │
-   ├── Dataset processing
-   ├── Model training
-   ├── Conformal prediction
-   ├── Distribution-shift generation
-   ├── Evaluation
-   └── Experiment tracking
+```bash
+python -m pytest -q
 ```
 
-CPU-friendly methods are prioritized so that experiments can be reproduced without requiring specialized GPU infrastructure.
-
----
-
-# Metrics
-
-The benchmark will primarily report:
-
-### Statistical Metrics
-
-* Empirical coverage
-* Coverage error
-* Coverage degradation
-* Coverage variability across runs
-
-### Efficiency Metrics
-
-* Average prediction-set size
-* Median prediction-set size
-* Prediction-set size distribution
-
-### Robustness Metrics
-
-* Performance versus shift severity
-* Coverage degradation versus shift severity
-* Recovery threshold
-
-### Recovery Cost
-
-Where applicable:
-
-* Additional calibration samples
-* Additional labeled samples
-* Recalibration cost
-* Runtime
-* Computational overhead
-
----
-
-# Experimental Principle
-
-A central principle of ConformalGuard is to evaluate **coverage and efficiency together**.
-
-For example:
+Latest verified development checkpoint:
 
 ```text
-Method A
-Coverage:        94.8%
-Average set size: 1.4
-
-Method B
-Coverage:        99.2%
-Average set size: 3.8
+116 passed
 ```
-
-Method B has higher coverage, but it may be substantially less informative.
-
-Therefore, benchmark results should not rank methods using coverage alone.
 
 ---
 
-# Proposed Experiment Matrix
+## Run the Robustness Benchmark
 
-A typical experiment can be represented as:
+```bash
+python examples/robustness_benchmark.py
+```
+
+The example runs IID, covariate-shift, label-shift, and concept-shift experiments across multiple random seeds.
+
+Generated outputs include:
 
 ```text
-Classifier
-    ×
-Conformal Method
-    ×
-Target Coverage
-    ×
-Shift Type
-    ×
-Shift Severity
-    ×
-Random Seed
+artifacts/robustness_summary.csv
+artifacts/robustness_summary.json
+artifacts/robustness_accuracy.png
+artifacts/robustness_coverage.png
+artifacts/robustness_accuracy_degradation.png
+artifacts/robustness_coverage_degradation.png
 ```
 
-For each configuration:
+---
 
-```text
-Train
-  ↓
-Calibrate
-  ↓
-Apply distribution shift
-  ↓
-Generate prediction sets
-  ↓
-Evaluate coverage
-  ↓
-Evaluate set size
-  ↓
-Measure recovery requirements
+## Verified Example Results
+
+One verified run of `examples/robustness_benchmark.py` on scikit-learn's breast-cancer dataset produced:
+
+| Condition | Mean accuracy | Mean coverage |
+|---|---:|---:|
+| IID | 0.980 | 0.874 |
+| Covariate severity 0.5 | 0.889 | 0.792 |
+| Covariate severity 1.0 | 0.716 | 0.617 |
+| Covariate severity 2.0 | 0.468 | 0.404 |
+| Concept severity 0.25 | 0.854 | 0.760 |
+| Concept severity 0.50 | 0.743 | 0.664 |
+| Concept severity 0.75 | 0.620 | 0.570 |
+| Concept severity 1.00 | 0.509 | 0.468 |
+
+These values describe one reproducible example run, not universal performance claims. Results depend on the dataset, split, classifier, random seeds, conformity score, confidence level, and shift configuration.
+
+---
+
+## Python API
+
+Run the combined benchmark:
+
+```python
+from conformalguard.experiments import run_robustness_benchmark
+
+result = run_robustness_benchmark(
+    X,
+    y,
+    label_target_proportions=(
+        {0: 0.50, 1: 0.50},
+        {0: 0.70, 1: 0.30},
+        {0: 0.30, 1: 0.70},
+    ),
+    covariate_severities=(0.0, 0.5, 1.0, 2.0),
+    concept_severities=(0.0, 0.25, 0.50, 0.75, 1.0),
+    seeds=(11, 42, 73),
+    confidence_level=0.90,
+)
 ```
 
-This structure allows results to be compared across different experimental conditions.
+Create a normalized summary table:
 
----
+```python
+from conformalguard.experiments import robustness_summary_frame
 
-# Project Structure
-
-The repository is currently in the **project foundation and research-environment setup stage**.
-
-The planned structure is:
-
-```text
-ConformalGuard/
-│
-├── README.md
-├── requirements.txt
-├── pyproject.toml
-│
-├── configs/
-│   └── experiments/
-│
-├── src/
-│   └── conformalguard/
-│       ├── data/
-│       ├── models/
-│       ├── conformal/
-│       ├── shifts/
-│       ├── evaluation/
-│       └── experiments/
-│
-├── tests/
-│
-├── notebooks/
-│
-├── results/
-│
-├── figures/
-│
-└── docs/
+summary = robustness_summary_frame(result)
 ```
 
-As implementation progresses, each directory will be populated with independently testable components.
+Compare shifted conditions against IID:
+
+```python
+from conformalguard.experiments import robustness_degradation_frame
+
+degradation = robustness_degradation_frame(result)
+```
+
+Plot coverage degradation:
+
+```python
+from conformalguard.experiments import plot_robustness_coverage_degradation
+
+ax = plot_robustness_coverage_degradation(result)
+```
 
 ---
 
-# Development Status
+## Reproducibility
 
-### Current
+The experiment architecture explicitly controls or records:
 
-* [x] Project definition
-* [x] Research question
-* [x] Benchmark scope
-* [x] Research environment setup
-* [x] Reproducibility requirements defined
-* [ ] Dataset pipeline
-* [ ] Baseline classifiers
-* [ ] Conformal prediction pipeline
-* [ ] Covariate-shift experiments
-* [ ] Label-shift experiments
-* [ ] Temporal-shift experiments
-* [ ] Coverage evaluation
-* [ ] Recovery-cost experiments
-* [ ] Automated experiment runner
-* [ ] Benchmark results
-* [ ] Final analysis
+- train / calibration / test splits
+- random seeds
+- confidence level
+- conformity score
+- shift severity
+- shifted-feature fraction
+- label target proportions
+- concept-shift feature
+- classification metrics
+- conformal metrics
 
-The project is intentionally **not presenting benchmark results yet**.
+Multi-seed grids aggregate results using means and standard deviations so robustness comparisons do not rely on a single split.
 
 ---
 
-# Design Principles
+## Design Principles
 
-## 1. Reproducibility First
-
-Every experiment should be reproducible from explicit configuration and recorded random seeds.
-
-## 2. CPU-Friendly Research
-
-The benchmark prioritizes models and workflows that can be executed on standard CPU hardware.
-
-## 3. Controlled Distribution Shift
-
-Shift severity should be configurable and measurable rather than relying only on naturally occurring drift.
-
-## 4. Coverage Is Not Enough
-
-Prediction-set efficiency is evaluated alongside statistical coverage.
-
-## 5. Honest Benchmarking
-
-Experimental results will be reported together with their assumptions, limitations, and uncertainty rather than presenting conformal prediction as automatically robust to arbitrary distribution shift.
+- **Reproducibility first:** experiments use explicit seeds and controlled configurations.
+- **CPU-friendly research:** the benchmark is designed to run without specialized accelerator hardware.
+- **Controlled distribution shift:** shift severity is an explicit experimental parameter.
+- **Coverage is not enough:** prediction-set efficiency and classification quality are evaluated alongside coverage.
+- **IID-relative interpretation:** shifted results can be compared directly with the reference condition.
+- **Honest benchmarking:** the project reports empirical behavior under specific shift mechanisms rather than claiming arbitrary distribution-shift guarantees.
 
 ---
 
-# Limitations
+## Limitations
 
-Conformal prediction's guarantees depend on assumptions about the relationship between calibration and test data.
+The current benchmark uses controlled synthetic shift mechanisms. These are useful for isolating failure modes but do not reproduce every real deployment environment.
 
-Therefore, this project does **not** assume that conformal prediction automatically provides its nominal coverage under arbitrary distribution shift.
+The implementation is centered on tabular classification. Concept shift is implemented through a controlled feature-dependent label transformation rather than a naturally evolving production process.
 
-Instead, the purpose of the benchmark is to measure how empirical behavior changes when those assumptions are stressed.
+The example benchmark uses a single public dataset and should not be interpreted as evidence of universal conformal robustness or failure.
 
-The benchmark results should consequently be interpreted within the specific datasets, models, shift mechanisms, and experimental protocols used.
-
----
-
-# Future Work
-
-Planned development includes:
-
-* Implementing baseline tabular classifiers
-* Adding multiple conformal prediction methods
-* Creating controlled shift generators
-* Building standardized experiment configurations
-* Running multi-seed experiments
-* Quantifying coverage degradation
-* Measuring prediction-set efficiency
-* Evaluating recalibration strategies
-* Measuring the cost of coverage recovery
-* Generating publication-quality plots and tables
-* Building a complete reproducibility pipeline
+Natural temporal drift, online adaptation, recalibration policies, recovery-cost experiments, and broader multi-dataset evaluation remain possible future extensions.
 
 ---
 
-# Project Status
+## Development Status
 
-**Current status:** Foundation and research environment setup.
+The experimental core is implemented and tested.
 
-The repository is being developed toward a reproducible empirical study of conformal prediction under distribution shift.
+Current verified capabilities include IID evaluation, three controlled distribution-shift families, multi-seed grids, combined robustness benchmarking, normalized reporting, CSV/JSON export, IID-relative degradation analysis, and visualization.
+
+The repository is now in final documentation and release-hardening work before the first stable release.
 
 ---
 
@@ -511,5 +285,5 @@ The repository is being developed toward a reproducible empirical study of confo
 
 **Chinmaya Satyam**
 
-B.Tech – Computer Science and Artificial Intelligence
+B.Tech - Computer Science and Artificial Intelligence
 Sri Venkateswara University College of Engineering
