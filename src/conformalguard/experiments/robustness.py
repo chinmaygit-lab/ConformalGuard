@@ -5,6 +5,14 @@ from typing import Any, Iterable, Mapping
 
 import pandas as pd
 
+from conformalguard.experiments.concept_shift import (
+    ConceptShiftExperimentResult,
+)
+from conformalguard.experiments.concept_shift_grid import (
+    ConceptShiftGridSummary,
+    run_concept_shift_grid,
+    summarize_concept_shift_grid,
+)
 from conformalguard.experiments.covariate_shift import (
     CovariateShiftExperimentResult,
 )
@@ -31,7 +39,7 @@ from conformalguard.experiments.label_shift_grid import (
 
 @dataclass(frozen=True)
 class RobustnessBenchmarkResult:
-    """Combined IID, covariate-shift, and label-shift benchmark results."""
+    """Combined IID and distribution-shift benchmark results."""
 
     confidence_level: float
     conformity_score: str
@@ -54,28 +62,51 @@ class RobustnessBenchmarkResult:
         LabelShiftGridSummary, ...
     ]
 
+    concept_shift_results: tuple[
+        ConceptShiftExperimentResult, ...
+    ] = ()
+    concept_shift_summary: tuple[
+        ConceptShiftGridSummary, ...
+    ] = ()
+
 
 def run_robustness_benchmark(
     X: pd.DataFrame,
     y: Any,
     *,
     label_target_proportions: Iterable[Mapping[Any, float]],
-    covariate_severities: Iterable[float] = (0.0, 0.5, 1.0, 2.0),
+    covariate_severities: Iterable[float] = (
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+    ),
+    concept_severities: Iterable[float] = (
+        0.0,
+        0.25,
+        0.50,
+        0.75,
+        1.0,
+    ),
+    concept_feature: str | None = None,
     seeds: Iterable[int] = (11, 42, 73),
     confidence_level: float = 0.90,
     feature_fraction: float = 0.50,
     conformity_score: str = "lac",
 ) -> RobustnessBenchmarkResult:
-    """Run the parallel IID, covariate-shift, and label-shift grids."""
+    """Run IID, covariate-, label-, and concept-shift grids."""
 
-    severity_values = tuple(covariate_severities)
+    covariate_severity_values = tuple(covariate_severities)
+    concept_severity_values = tuple(concept_severities)
+
     target_values = tuple(
         dict(target)
         for target in label_target_proportions
     )
+
     random_seeds = tuple(seeds)
 
-    if not severity_values:
+    if not covariate_severity_values:
         raise ValueError(
             "At least one covariate-shift severity is required."
         )
@@ -83,6 +114,11 @@ def run_robustness_benchmark(
     if not target_values:
         raise ValueError(
             "At least one label target proportion mapping is required."
+        )
+
+    if not concept_severity_values:
+        raise ValueError(
+            "At least one concept-shift severity is required."
         )
 
     if not random_seeds:
@@ -99,7 +135,7 @@ def run_robustness_benchmark(
     covariate_results = run_covariate_shift_grid(
         X,
         y,
-        severities=severity_values,
+        severities=covariate_severity_values,
         seeds=random_seeds,
         confidence_level=confidence_level,
         feature_fraction=feature_fraction,
@@ -115,11 +151,29 @@ def run_robustness_benchmark(
         conformity_score=conformity_score,
     )
 
+    concept_results = run_concept_shift_grid(
+        X,
+        y,
+        severities=concept_severity_values,
+        seeds=random_seeds,
+        feature=concept_feature,
+        confidence_level=confidence_level,
+        conformity_score=conformity_score,
+    )
+
     iid_summary = summarize_iid_grid(iid_results)
+
     covariate_summary = summarize_covariate_shift_grid(
         covariate_results
     )
-    label_summary = summarize_label_shift_grid(label_results)
+
+    label_summary = summarize_label_shift_grid(
+        label_results
+    )
+
+    concept_summary = summarize_concept_shift_grid(
+        concept_results
+    )
 
     return RobustnessBenchmarkResult(
         confidence_level=confidence_level,
@@ -131,4 +185,6 @@ def run_robustness_benchmark(
         covariate_shift_summary=covariate_summary,
         label_shift_results=label_results,
         label_shift_summary=label_summary,
+        concept_shift_results=concept_results,
+        concept_shift_summary=concept_summary,
     )

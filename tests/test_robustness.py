@@ -6,12 +6,13 @@ from conformalguard.experiments import (
 )
 
 
-def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
+def test_robustness_benchmark_runs_all_four_grids(monkeypatch):
     calls = {}
 
     iid_results = ("iid-result",)
     covariate_results = ("covariate-result",)
     label_results = ("label-result",)
+    concept_results = ("concept-result",)
 
     def fake_iid_grid(
         X,
@@ -66,6 +67,25 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
         )
         return label_results
 
+    def fake_concept_grid(
+        X,
+        y,
+        *,
+        severities,
+        seeds,
+        feature,
+        confidence_level,
+        conformity_score,
+    ):
+        calls["concept"] = (
+            tuple(severities),
+            tuple(seeds),
+            feature,
+            confidence_level,
+            conformity_score,
+        )
+        return concept_results
+
     def fake_iid_summary(results):
         calls["iid_summary"] = results
         return ("iid-summary",)
@@ -77,6 +97,10 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
     def fake_label_summary(results):
         calls["label_summary"] = results
         return ("label-summary",)
+
+    def fake_concept_summary(results):
+        calls["concept_summary"] = results
+        return ("concept-summary",)
 
     module = "conformalguard.experiments.robustness."
 
@@ -93,6 +117,11 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
         fake_label_grid,
     )
     monkeypatch.setattr(
+        module + "run_concept_shift_grid",
+        fake_concept_grid,
+    )
+
+    monkeypatch.setattr(
         module + "summarize_iid_grid",
         fake_iid_summary,
     )
@@ -103,6 +132,10 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
     monkeypatch.setattr(
         module + "summarize_label_shift_grid",
         fake_label_summary,
+    )
+    monkeypatch.setattr(
+        module + "summarize_concept_shift_grid",
+        fake_concept_summary,
     )
 
     targets = (
@@ -115,6 +148,8 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
         y="target",
         label_target_proportions=targets,
         covariate_severities=(0.0, 1.0),
+        concept_severities=(0.0, 0.50, 1.0),
+        concept_feature="x0",
         seeds=(11, 42),
         confidence_level=0.90,
         feature_fraction=0.50,
@@ -136,6 +171,9 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
 
     assert result.label_shift_results == label_results
     assert result.label_shift_summary == ("label-summary",)
+
+    assert result.concept_shift_results == concept_results
+    assert result.concept_shift_summary == ("concept-summary",)
 
     assert calls["iid"] == (
         "features",
@@ -160,9 +198,18 @@ def test_robustness_benchmark_runs_all_three_grids(monkeypatch):
         "lac",
     )
 
+    assert calls["concept"] == (
+        (0.0, 0.50, 1.0),
+        (11, 42),
+        "x0",
+        0.90,
+        "lac",
+    )
+
     assert calls["iid_summary"] == iid_results
     assert calls["covariate_summary"] == covariate_results
     assert calls["label_summary"] == label_results
+    assert calls["concept_summary"] == concept_results
 
 
 def test_robustness_benchmark_rejects_empty_seeds():
@@ -195,4 +242,16 @@ def test_robustness_benchmark_rejects_empty_label_targets():
             X="features",
             y="target",
             label_target_proportions=(),
+        )
+
+
+def test_robustness_benchmark_rejects_empty_concept_severities():
+    with pytest.raises(ValueError, match="concept-shift severity"):
+        run_robustness_benchmark(
+            X="features",
+            y="target",
+            label_target_proportions=(
+                {0: 0.50, 1: 0.50},
+            ),
+            concept_severities=(),
         )

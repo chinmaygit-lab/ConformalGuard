@@ -65,6 +65,9 @@ def _condition_label(
     if experiment == "label_shift":
         return f"Label\n{condition}"
 
+    if experiment == "concept_shift":
+        return f"Concept\n{condition}"
+
     return f"{experiment}\n{condition}"
 
 

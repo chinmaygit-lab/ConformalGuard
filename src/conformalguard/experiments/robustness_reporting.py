@@ -125,6 +125,23 @@ def robustness_summary_records(
             }
         )
 
+    for summary in result.concept_shift_summary:
+        records.append(
+            {
+                "experiment": "concept_shift",
+                "condition": (
+                    f"severity={float(summary.severity):.12g}; "
+                    f"feature={summary.shifted_feature}"
+                ),
+                "confidence_level": summary.confidence_level,
+                "conformity_score": summary.conformity_score,
+                "severity": summary.severity,
+                "feature_fraction": None,
+                "target_proportions": None,
+                **_metric_values(summary),
+            }
+        )
+
     return tuple(records)
 
 
