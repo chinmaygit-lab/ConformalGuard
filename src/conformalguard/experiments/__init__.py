@@ -53,6 +53,12 @@ from conformalguard.experiments.robustness_degradation import (
     write_robustness_degradation_csv,
     write_robustness_degradation_json,
 )
+from conformalguard.experiments.robustness_degradation_plotting import (
+    SUPPORTED_DEGRADATION_METRICS,
+    plot_robustness_accuracy_degradation,
+    plot_robustness_coverage_degradation,
+    plot_robustness_degradation_metric,
+)
 from conformalguard.experiments.robustness_reporting import (
     robustness_summary_frame,
     robustness_summary_records,
@@ -81,6 +87,10 @@ __all__ = [
     "LabelShiftExperimentResult",
     "LabelShiftGridSummary",
     "RobustnessBenchmarkResult",
+    "SUPPORTED_DEGRADATION_METRICS",
+    "plot_robustness_accuracy_degradation",
+    "plot_robustness_coverage_degradation",
+    "plot_robustness_degradation_metric",
     "SUPPORTED_ROBUSTNESS_METRICS",
     "plot_robustness_accuracy",
     "plot_robustness_coverage",

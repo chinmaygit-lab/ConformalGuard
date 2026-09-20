@@ -5,7 +5,9 @@ from sklearn.datasets import load_breast_cancer
 
 from conformalguard.experiments import (
     plot_robustness_accuracy,
+    plot_robustness_accuracy_degradation,
     plot_robustness_coverage,
+    plot_robustness_coverage_degradation,
     robustness_summary_frame,
     run_robustness_benchmark,
     write_robustness_summary_csv,
@@ -61,6 +63,24 @@ def main() -> None:
     ax.figure.savefig(
         output_dir / "robustness_coverage.png",
         dpi=150,
+    )
+    plt.close(ax.figure)
+
+    ax = plot_robustness_accuracy_degradation(result)
+    ax.figure.tight_layout()
+    ax.figure.savefig(
+        output_dir / "robustness_accuracy_degradation.png",
+        dpi=150,
+        bbox_inches="tight",
+    )
+    plt.close(ax.figure)
+
+    ax = plot_robustness_coverage_degradation(result)
+    ax.figure.tight_layout()
+    ax.figure.savefig(
+        output_dir / "robustness_coverage_degradation.png",
+        dpi=150,
+        bbox_inches="tight",
     )
     plt.close(ax.figure)
 
