@@ -48,6 +48,11 @@ from conformalguard.experiments.robustness import (
     RobustnessBenchmarkResult,
     run_robustness_benchmark,
 )
+from conformalguard.experiments.robustness_degradation import (
+    robustness_degradation_frame,
+    write_robustness_degradation_csv,
+    write_robustness_degradation_json,
+)
 from conformalguard.experiments.robustness_reporting import (
     robustness_summary_frame,
     robustness_summary_records,
@@ -93,12 +98,15 @@ __all__ = [
     "run_label_shift_grid",
     "run_label_shift_sweep",
     "run_robustness_benchmark",
+    "robustness_degradation_frame",
     "robustness_summary_frame",
     "robustness_summary_records",
     "summarize_concept_shift_grid",
     "summarize_covariate_shift_grid",
     "summarize_iid_grid",
     "summarize_label_shift_grid",
+    "write_robustness_degradation_csv",
+    "write_robustness_degradation_json",
     "write_robustness_summary_csv",
     "write_robustness_summary_json",
 ]
