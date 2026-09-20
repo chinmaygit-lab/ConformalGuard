@@ -27,6 +27,7 @@ def main() -> None:
             {0: 0.30, 1: 0.70},
         ),
         covariate_severities=(0.0, 0.5, 1.0, 2.0),
+        concept_severities=(0.0, 0.25, 0.50, 0.75, 1.0),
         seeds=(11, 42, 73),
         confidence_level=0.90,
     )
@@ -62,6 +63,16 @@ def main() -> None:
         dpi=150,
     )
     plt.close(ax.figure)
+
+    print("\nConcept shift:")
+    for summary in result.concept_shift_summary:
+        print(
+            f"  severity={summary.severity:.2f} "
+            f"feature={summary.shifted_feature} "
+            f"accuracy={summary.mean_accuracy:.3f} "
+            f"coverage={summary.mean_coverage:.3f} "
+            f"set_size={summary.mean_set_size:.3f}"
+        )
 
 
 if __name__ == "__main__":
