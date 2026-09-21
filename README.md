@@ -112,6 +112,35 @@ One verified run on scikit-learn's breast-cancer dataset produced the following 
 
 These are one reproducible example run, not universal performance claims. Results depend on the dataset, split, classifier, random seeds, conformity score, confidence level, and shift configuration.
 
+## Multi-dataset benchmark
+
+ConformalGuard v0.2.0 adds a network-free cross-dataset robustness benchmark.
+
+Run the default benchmark suite:
+
+    conformalguard suite --out artifacts/suite
+
+Choose datasets explicitly:
+
+    conformalguard suite --datasets breast_cancer,iris,wine --out artifacts/suite
+
+Built-in datasets:
+
+- breast_cancer
+- iris
+- wine
+- digits
+
+The suite produces per-dataset reports plus aggregate CSV, JSON, and HTML results.
+The scorecard records which shift family and condition caused the worst
+accuracy and coverage degradation for each dataset.
+
+The default suite uses Breast Cancer, Iris, and Wine to remain CPU-friendly.
+Digits is available for additional experiments.
+
+These are empirical stress-test results, not universal coverage guarantees.
+
+
 ## Advanced configuration
 
 ```python
@@ -156,7 +185,7 @@ python -m build
 python -m twine check dist/*
 ```
 
-The public repository's latest documented checkpoint before this productization patch reports **116 passing tests** for the experimental core.
+The v0.2.0 release candidate is validated by **135 passing tests**, including the cross-dataset benchmark suite.
 
 ## Citation
 

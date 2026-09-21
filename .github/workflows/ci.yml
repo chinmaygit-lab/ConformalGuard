@@ -27,9 +27,11 @@ jobs:
           src/conformalguard/guard.py
           src/conformalguard/cli.py
           src/conformalguard/html_report.py
+          src/conformalguard/suite.py
           tests/test_guard_facade.py
           tests/test_cli.py
           tests/test_html_report.py
+          tests/test_suite.py
           examples/quickstart.py
       - name: Run full test suite
         run: python -m pytest -q

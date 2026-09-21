@@ -51,6 +51,16 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--target", required=True, help="Target column name.")
     _add_common_arguments(benchmark)
 
+    suite = subparsers.add_parser(
+        "suite", help="Run the built-in cross-dataset benchmark suite."
+    )
+    suite.add_argument(
+        "--datasets",
+        default="breast_cancer,iris,wine",
+        help="Comma-separated built-in datasets.",
+    )
+    _add_common_arguments(suite)
+
     return parser
 
 
@@ -130,6 +140,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             parser.error(f"Target column {args.target!r} was not found in {args.csv}.")
         y = frame.pop(args.target)
         return _run_guard(frame, y, args)
+
+    if args.command == "suite":
+        from conformalguard.suite import run_builtin_suite
+
+        dataset_names = tuple(
+            item.strip() for item in args.datasets.split(",") if item.strip()
+        )
+        try:
+            result = run_builtin_suite(
+                dataset_names, config=_config_from_args(args), output_dir=args.out
+            )
+        except ValueError as exc:
+            parser.error(str(exc))
+        print(result.scorecard.to_string(index=False))
+        print(f"\nSaved suite report to: {args.out.resolve()}")
+        return 0
 
     parser.print_help()
     return 0
