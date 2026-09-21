@@ -19,10 +19,16 @@ def write_html_report(
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
 
-    iid = summary.loc[summary["experiment"] == "iid"] if "experiment" in summary else pd.DataFrame()
+    iid = (
+        summary.loc[summary["experiment"] == "iid"]
+        if "experiment" in summary
+        else pd.DataFrame()
+    )
     iid_coverage = _first_number(iid, "mean_coverage")
     shifted_coverage = _numeric_series(
-        summary.loc[summary["experiment"] != "iid"] if "experiment" in summary else summary,
+        summary.loc[summary["experiment"] != "iid"]
+        if "experiment" in summary
+        else summary,
         "mean_coverage",
     )
     coverage_delta = _numeric_series(degradation, "coverage_delta")
@@ -31,7 +37,9 @@ def write_html_report(
         ("IID coverage", _fmt(iid_coverage)),
         (
             "Lowest shifted coverage",
-            _fmt(float(shifted_coverage.min())) if not shifted_coverage.empty else "n/a",
+            _fmt(float(shifted_coverage.min()))
+            if not shifted_coverage.empty
+            else "n/a",
         ),
         (
             "Largest coverage drop",
@@ -45,8 +53,12 @@ def write_html_report(
         for label, value in cards
     )
 
-    summary_table = summary.to_html(index=False, border=0, classes="dataframe", escape=True)
-    degradation_table = degradation.to_html(index=False, border=0, classes="dataframe", escape=True)
+    summary_table = summary.to_html(
+        index=False, border=0, classes="dataframe", escape=True
+    )
+    degradation_table = degradation.to_html(
+        index=False, border=0, classes="dataframe", escape=True
+    )
 
     plots = [
         ("Coverage", "robustness_coverage.png"),

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 import pandas as pd
 
@@ -13,7 +13,9 @@ from conformalguard.guard import ConformalGuard, GuardConfig
 
 def _csv_numbers(value: str, *, cast=float) -> tuple:
     try:
-        items = tuple(cast(piece.strip()) for piece in value.split(",") if piece.strip())
+        items = tuple(
+            cast(piece.strip()) for piece in value.split(",") if piece.strip()
+        )
     except ValueError as exc:
         raise argparse.ArgumentTypeError(str(exc)) from exc
     if not items:
@@ -34,13 +36,17 @@ def build_parser() -> argparse.ArgumentParser:
         prog="conformalguard",
         description="Stress-test conformal prediction under controlled distribution shift.",
     )
-    parser.add_argument("--version", action="store_true", help="Print version and exit.")
+    parser.add_argument(
+        "--version", action="store_true", help="Print version and exit."
+    )
     subparsers = parser.add_subparsers(dest="command")
 
     demo = subparsers.add_parser("demo", help="Run the built-in breast-cancer demo.")
     _add_common_arguments(demo)
 
-    benchmark = subparsers.add_parser("benchmark", help="Run a benchmark on a CSV file.")
+    benchmark = subparsers.add_parser(
+        "benchmark", help="Run a benchmark on a CSV file."
+    )
     benchmark.add_argument("csv", type=Path, help="Input CSV file.")
     benchmark.add_argument("--target", required=True, help="Target column name.")
     _add_common_arguments(benchmark)

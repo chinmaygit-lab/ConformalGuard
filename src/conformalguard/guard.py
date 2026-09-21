@@ -7,9 +7,10 @@ run.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 import pandas as pd
 
@@ -120,13 +121,13 @@ class ConformalGuard:
             write_robustness_degradation_csv,
             write_robustness_degradation_json,
         )
-        from conformalguard.experiments.robustness_plotting import (
-            plot_robustness_accuracy,
-            plot_robustness_coverage,
-        )
         from conformalguard.experiments.robustness_degradation_plotting import (
             plot_robustness_accuracy_degradation,
             plot_robustness_coverage_degradation,
+        )
+        from conformalguard.experiments.robustness_plotting import (
+            plot_robustness_accuracy,
+            plot_robustness_coverage,
         )
         from conformalguard.experiments.robustness_reporting import (
             write_robustness_summary_csv,
@@ -197,7 +198,9 @@ def _validate_feature_frame(X: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("X must contain at least one row.")
     if X.columns.duplicated().any():
         raise ValueError("X contains duplicate column names.")
-    non_numeric = [name for name in X.columns if not pd.api.types.is_numeric_dtype(X[name])]
+    non_numeric = [
+        name for name in X.columns if not pd.api.types.is_numeric_dtype(X[name])
+    ]
     if non_numeric:
         joined = ", ".join(map(str, non_numeric[:5]))
         raise ValueError(

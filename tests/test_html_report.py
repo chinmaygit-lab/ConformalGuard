@@ -9,7 +9,11 @@ def test_html_report_contains_core_metrics_and_plot_references(tmp_path: Path):
     summary = pd.DataFrame(
         [
             {"experiment": "iid", "condition": "iid", "mean_coverage": 0.90},
-            {"experiment": "covariate_shift", "condition": "severity=1", "mean_coverage": 0.61},
+            {
+                "experiment": "covariate_shift",
+                "condition": "severity=1",
+                "mean_coverage": 0.61,
+            },
         ]
     )
     degradation = pd.DataFrame(
