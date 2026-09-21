@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use ConformalGuard in research, please cite this repository."
+title: "ConformalGuard"
+type: software
+authors:
+  - family-names: "Satyam"
+    given-names: "Chinmaya"
+repository-code: "https://github.com/chinmaygit-lab/ConformalGuard"
+version: "0.1.0"
+license: Apache-2.0

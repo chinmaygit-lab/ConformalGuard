@@ -1,25 +1,66 @@
 [build-system]
-requires = ["setuptools>=75"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "conformalguard"
 version = "0.1.0"
-description = "A reproducible benchmark of conformal prediction under distribution shift."
+description = "Stress-test conformal prediction under controlled distribution shift."
+readme = "README.md"
 requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{name = "Chinmaya Satyam"}]
+keywords = [
+  "conformal-prediction",
+  "uncertainty-quantification",
+  "distribution-shift",
+  "robustness",
+  "machine-learning",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
-    "numpy",
-    "pandas",
-    "scipy",
-    "scikit-learn",
-    "matplotlib",
-    "mapie",
+  "numpy",
+  "pandas",
+  "scipy",
+  "scikit-learn",
+  "matplotlib",
+  "mapie",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
+  "build",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "twine",
 ]
+
+[project.scripts]
+conformalguard = "conformalguard.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/chinmaygit-lab/ConformalGuard"
+Repository = "https://github.com/chinmaygit-lab/ConformalGuard"
+Issues = "https://github.com/chinmaygit-lab/ConformalGuard/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
