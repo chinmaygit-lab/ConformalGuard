@@ -12,7 +12,6 @@ from conformalguard.experiments.robustness_reporting import (
     robustness_summary_frame,
 )
 
-
 _METRIC_COLUMNS: Final = {
     "accuracy": (
         "mean_accuracy",

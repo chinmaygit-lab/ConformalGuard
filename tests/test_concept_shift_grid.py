@@ -33,7 +33,7 @@ def make_result(
         severity=severity,
         shifted_feature=shifted_feature,
         threshold=0.0,
-        n_shifted=int(round(100 * severity)),
+        n_shifted=round(100 * severity),
         classification=ClassificationMetrics(
             accuracy=accuracy,
             macro_f1=accuracy - 0.05,

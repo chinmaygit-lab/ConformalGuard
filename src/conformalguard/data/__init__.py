@@ -11,9 +11,9 @@ from conformalguard.data.splits import (
 )
 
 __all__ = [
-    "DatasetBundle",
-    "DataSplit",
     "MAGIC_OPENML_DATA_ID",
+    "DataSplit",
+    "DatasetBundle",
     "load_magic_telescope",
     "stratified_train_conf_test_split",
 ]

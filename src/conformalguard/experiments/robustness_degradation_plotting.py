@@ -15,7 +15,6 @@ from conformalguard.experiments.robustness_plotting import (
     _condition_label,
 )
 
-
 _DEGRADATION_METRICS: Final = {
     "accuracy": (
         "accuracy_delta",

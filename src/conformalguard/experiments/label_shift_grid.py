@@ -1,7 +1,8 @@
 """Multi-seed label-shift experiments and summaries."""
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -143,7 +144,7 @@ def summarize_label_shift_grid(
             if _target_key(result.target_proportions) == target_key
         )
 
-        def values(getter):
+        def values(getter, group=group):
             return np.asarray(
                 [getter(result) for result in group],
                 dtype=float,

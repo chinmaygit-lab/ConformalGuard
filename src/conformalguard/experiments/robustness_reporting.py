@@ -1,14 +1,14 @@
 """Reporting helpers for combined robustness benchmarks."""
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import pandas as pd
 
 from conformalguard.experiments.robustness import (
     RobustnessBenchmarkResult,
 )
-
 
 ROBUSTNESS_SUMMARY_COLUMNS = (
     "experiment",

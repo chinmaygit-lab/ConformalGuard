@@ -1,7 +1,8 @@
 """Multi-seed concept-shift experiments and summaries."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -131,7 +132,7 @@ def summarize_concept_shift_grid(
             if result.severity == severity
         )
 
-        def values(getter):
+        def values(getter, group=group):
             return np.asarray(
                 [getter(result) for result in group],
                 dtype=float,

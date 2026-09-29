@@ -5,7 +5,6 @@ from sklearn.datasets import fetch_openml
 
 from conformalguard.data.datasets import DatasetBundle
 
-
 MAGIC_OPENML_DATA_ID = 1120
 MAGIC_EXPECTED_SAMPLES = 19020
 MAGIC_EXPECTED_FEATURES = 10

@@ -30,7 +30,7 @@ def make_result(
         random_state=seed,
         target_proportions=dict(target_proportions),
         sampled_counts={
-            label: int(round(200 * proportion))
+            label: round(200 * proportion)
             for label, proportion in target_proportions.items()
         },
         classification=ClassificationMetrics(

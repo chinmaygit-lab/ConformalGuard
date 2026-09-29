@@ -1,7 +1,6 @@
 """Controlled covariate mean shifts for numeric tabular data."""
 
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
 import pandas as pd

@@ -1,7 +1,8 @@
 """IID split-conformal classification experiments."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 from mapie.classification import SplitConformalClassifier
@@ -14,7 +15,6 @@ from conformalguard.metrics import (
     evaluate_prediction_sets,
 )
 from conformalguard.models import make_logistic_regression
-
 
 SUPPORTED_CONFORMITY_SCORES = ("lac", "aps", "raps")
 BINARY_CONFORMITY_SCORES = ("lac",)

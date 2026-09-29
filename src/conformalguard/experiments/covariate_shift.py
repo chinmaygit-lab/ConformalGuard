@@ -1,7 +1,8 @@
 """Experiments measuring conformal reliability under covariate shift."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 import pandas as pd

@@ -1,7 +1,8 @@
 """Experiments measuring conformal reliability under label shift."""
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 import numpy as np
 import pandas as pd

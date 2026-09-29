@@ -12,7 +12,6 @@ from conformalguard.experiments.robustness_reporting import (
     robustness_summary_frame,
 )
 
-
 _DELTA_METRICS: Final = {
     "accuracy": "mean_accuracy",
     "macro_f1": "mean_macro_f1",

@@ -1,7 +1,8 @@
 """Grid experiments across random seeds and coverage levels."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 
@@ -86,7 +87,7 @@ def summarize_iid_grid(
             if result.confidence_level == level
         )
 
-        def values(getter):
+        def values(getter, group=group):
             return np.asarray(
                 [getter(result) for result in group],
                 dtype=float,
