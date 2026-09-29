@@ -54,3 +54,68 @@ def test_config_rejects_negative_covariate_severity():
 def test_config_rejects_concept_severity_above_one():
     with pytest.raises(ValueError, match="concept_severities"):
         GuardConfig(concept_severities=(0.0, 1.25))
+
+def test_worst_shift_reports_largest_coverage_and_accuracy_drop(
+    monkeypatch,
+):
+    guard = ConformalGuard()
+
+    degradation = pd.DataFrame(
+        [
+            {
+                "experiment": "covariate_shift",
+                "condition": "severity=0.5",
+                "coverage_delta": -0.10,
+                "accuracy_delta": -0.05,
+            },
+            {
+                "experiment": "covariate_shift",
+                "condition": "severity=2",
+                "coverage_delta": -0.42,
+                "accuracy_delta": -0.31,
+            },
+            {
+                "experiment": "concept_shift",
+                "condition": "severity=1; feature=0",
+                "coverage_delta": -0.35,
+                "accuracy_delta": -0.44,
+            },
+        ]
+    )
+
+    monkeypatch.setattr(
+        guard,
+        "degradation",
+        lambda: degradation,
+    )
+
+    result = guard.worst_shift()
+
+    assert result["worst_coverage_experiment"] == "covariate_shift"
+    assert result["worst_coverage_condition"] == "severity=2"
+    assert result["worst_coverage_delta"] == pytest.approx(-0.42)
+
+    assert result["worst_accuracy_experiment"] == "concept_shift"
+    assert (
+        result["worst_accuracy_condition"]
+        == "severity=1; feature=0"
+    )
+    assert result["worst_accuracy_delta"] == pytest.approx(-0.44)
+
+
+def test_worst_shift_rejects_empty_degradation_frame(
+    monkeypatch,
+):
+    guard = ConformalGuard()
+
+    monkeypatch.setattr(
+        guard,
+        "degradation",
+        lambda: pd.DataFrame(),
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="No shifted conditions",
+    ):
+        guard.worst_shift()

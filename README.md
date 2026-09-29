@@ -51,6 +51,7 @@ guard.run(X, y)
 
 print(guard.summary())
 print(guard.degradation())
+print(guard.worst_shift())
 guard.save_report("artifacts")
 ```
 

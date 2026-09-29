@@ -111,6 +111,42 @@ class ConformalGuard:
 
         return robustness_degradation_frame(result)
 
+    def worst_shift(self) -> dict[str, Any]:
+        """Return the shifted conditions with the largest IID-relative drops."""
+        frame = self.degradation()
+
+        if frame.empty:
+            raise RuntimeError(
+                "No shifted conditions are available for worst-shift analysis."
+            )
+
+        coverage_index = frame["coverage_delta"].astype(float).idxmin()
+        accuracy_index = frame["accuracy_delta"].astype(float).idxmin()
+
+        coverage_row = frame.loc[coverage_index]
+        accuracy_row = frame.loc[accuracy_index]
+
+        return {
+            "worst_coverage_experiment": str(
+                coverage_row["experiment"]
+            ),
+            "worst_coverage_condition": str(
+                coverage_row["condition"]
+            ),
+            "worst_coverage_delta": float(
+                coverage_row["coverage_delta"]
+            ),
+            "worst_accuracy_experiment": str(
+                accuracy_row["experiment"]
+            ),
+            "worst_accuracy_condition": str(
+                accuracy_row["condition"]
+            ),
+            "worst_accuracy_delta": float(
+                accuracy_row["accuracy_delta"]
+            ),
+        }
+
     def save_report(self, output_dir: str | Path = "artifacts") -> dict[str, Path]:
         """Write CSV/JSON summaries and four standard plots to ``output_dir``."""
         result = self._require_result()
